@@ -1,5 +1,6 @@
 using System.Text;
 using FinanceTracker.API.Common.Extensions;
+using FinanceTracker.API.Infrastructure.Auth;
 using FinanceTracker.API.Infrastructure.Persistence;
 using FluentValidation;
 using Hangfire;
@@ -33,6 +34,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<JwtService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
