@@ -8,6 +8,15 @@ Aplicación web para gestión de finanzas personales. Permite registrar ingresos
 **Frontend:** React · TypeScript · Vite  
 **Librerías:** MediatR · FluentValidation · Hangfire · PdfPig · BCrypt
 
+### ¿Por qué Vite y no Next.js?
+
+Next.js es un framework encima de React que agrega SSR (Server Side Rendering) y SSG (Static Site Generation). Su ventaja principal es el SEO y el tiempo de carga inicial para páginas públicas. Para este proyecto no aplica por dos razones:
+
+- **La app vive detrás de login.** No hay páginas públicas que Google necesite indexar, así que el SSR no aporta nada.
+- **Vite + React puro enseña React.** Next.js abstrae el modelo mental con Server Components, App Router y la distinción server/client. Aprender eso antes de dominar React genera confusión. Primero React, después Next.
+
+Si este proyecto fuera una app pública (landing, blog, e-commerce), Next.js sería la elección correcta.
+
 ### ¿Por qué Vite y no Create React App?
 
 Create React App está abandonado desde 2023 y ya no recibe mantenimiento. Vite es el estándar actual para proyectos React por tres razones concretas:
