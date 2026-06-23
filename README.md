@@ -45,7 +45,7 @@ Clean Architecture agrega valor cuando el dominio es complejo y hay múltiples p
 - [x] Transacciones manuales (CRUD)
 - [x] Importar estado de cuenta PDF de BBVA
 - [x] Auto-categorización por descripción del movimiento
-- [ ] Presupuestos por categoría y mes
+- [x] Presupuestos por categoría y mes
 - [ ] Dashboard con balance, gastos por categoría y % de presupuesto
 - [ ] Alertas automáticas al superar el 80% del presupuesto (Hangfire)
 

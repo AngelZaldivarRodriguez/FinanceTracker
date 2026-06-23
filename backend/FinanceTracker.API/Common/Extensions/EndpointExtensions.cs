@@ -1,5 +1,6 @@
 using FinanceTracker.API.Features.Auth.Login;
 using FinanceTracker.API.Features.Auth.Register;
+using FinanceTracker.API.Features.Budgets;
 using FinanceTracker.API.Features.Categories;
 using FinanceTracker.API.Features.Import;
 using FinanceTracker.API.Features.Transactions;
@@ -15,5 +16,6 @@ public static class EndpointExtensions
         CategoriesEndpoint.Map(app);
         TransactionsEndpoint.Map(app);
         ImportEndpoint.Map(app);
+        BudgetsEndpoint.Map(app);
     }
 }
