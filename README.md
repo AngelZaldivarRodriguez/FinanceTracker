@@ -54,7 +54,7 @@ Clean Architecture agrega valor cuando el dominio es complejo y hay múltiples p
 ### Requisitos
 
 - .NET 10 SDK
-- SQL Server o LocalDB
+- SQL Server o LocalDB (viene incluido con Visual Studio)
 - Node 18+
 
 ### Backend
@@ -68,7 +68,7 @@ Crea un archivo `appsettings.Development.json` con tu connection string:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=FinanceTracker;Trusted_Connection=True;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=FinanceTracker;Trusted_Connection=True;"
   },
   "Jwt": {
     "Key": "tu_clave_secreta_minimo_32_caracteres",
