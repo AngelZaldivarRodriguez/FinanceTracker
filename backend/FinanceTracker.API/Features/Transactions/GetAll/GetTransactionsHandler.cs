@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinanceTracker.API.Features.Transactions.GetAll;
 
-public class GetTransactionsHandler(AppDbContext db) : IRequestHandler<GetTransactionsQuery, List<TransactionResponse>>
+public class GetTransactionsHandler(AppDbContext db) : IRequestHandler<GetTransactionsQuery, PagedTransactionsResponse>
 {
-    public async Task<List<TransactionResponse>> Handle(GetTransactionsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedTransactionsResponse> Handle(GetTransactionsQuery request, CancellationToken cancellationToken)
     {
         var query = db.Transactions
             .Include(t => t.Category)
@@ -24,8 +24,15 @@ public class GetTransactionsHandler(AppDbContext db) : IRequestHandler<GetTransa
         if (request.Type.HasValue)
             query = query.Where(t => t.Type == request.Type.Value);
 
-        return await query
+        if (!string.IsNullOrWhiteSpace(request.Search))
+            query = query.Where(t => t.Description.Contains(request.Search));
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var items = await query
             .OrderByDescending(t => t.Date)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(t => new TransactionResponse(
                 t.Id,
                 t.Amount,
@@ -39,5 +46,13 @@ public class GetTransactionsHandler(AppDbContext db) : IRequestHandler<GetTransa
                 t.IsImported
             ))
             .ToListAsync(cancellationToken);
+
+        return new PagedTransactionsResponse(
+            items,
+            total,
+            request.Page,
+            request.PageSize,
+            (int)Math.Ceiling((double)total / request.PageSize)
+        );
     }
 }

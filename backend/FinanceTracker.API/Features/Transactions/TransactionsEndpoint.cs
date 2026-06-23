@@ -22,10 +22,13 @@ public static class TransactionsEndpoint
             DateTime? from,
             DateTime? to,
             Guid? categoryId,
-            TransactionType? type) =>
+            TransactionType? type,
+            string? search,
+            int page = 1,
+            int pageSize = 20) =>
         {
             var result = await mediator.Send(new GetTransactionsQuery(
-                user.GetUserId(), from, to, categoryId, type));
+                user.GetUserId(), from, to, categoryId, type, search, page, pageSize));
             return Results.Ok(result);
         });
 

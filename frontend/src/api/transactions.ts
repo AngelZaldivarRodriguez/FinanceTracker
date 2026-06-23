@@ -15,6 +15,14 @@ export interface Transaction {
   isImported: boolean
 }
 
+export interface PagedTransactions {
+  items: Transaction[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 export interface CreateTransactionDto {
   amount: number
   type: TransactionType
@@ -23,9 +31,19 @@ export interface CreateTransactionDto {
   categoryId: string
 }
 
+export interface TransactionFilters {
+  from?: string
+  to?: string
+  categoryId?: string
+  type?: string
+  search?: string
+  page?: number
+  pageSize?: number
+}
+
 export const transactionsApi = {
-  getAll: (params?: { from?: string; to?: string; categoryId?: string; type?: string }) =>
-    api.get<Transaction[]>('/transactions', { params }).then((r) => r.data),
+  getAll: (params?: TransactionFilters) =>
+    api.get<PagedTransactions>('/transactions', { params }).then((r) => r.data),
 
   create: (data: CreateTransactionDto) =>
     api.post<Transaction>('/transactions', data).then((r) => r.data),

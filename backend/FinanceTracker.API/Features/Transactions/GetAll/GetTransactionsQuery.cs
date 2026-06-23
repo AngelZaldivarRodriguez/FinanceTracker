@@ -8,8 +8,19 @@ public record GetTransactionsQuery(
     DateTime? From,
     DateTime? To,
     Guid? CategoryId,
-    TransactionType? Type
-) : IRequest<List<TransactionResponse>>;
+    TransactionType? Type,
+    string? Search,
+    int Page,
+    int PageSize
+) : IRequest<PagedTransactionsResponse>;
+
+public record PagedTransactionsResponse(
+    List<TransactionResponse> Items,
+    int Total,
+    int Page,
+    int PageSize,
+    int TotalPages
+);
 
 public record TransactionResponse(
     Guid Id,
