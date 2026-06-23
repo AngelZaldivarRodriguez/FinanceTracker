@@ -46,8 +46,8 @@ Clean Architecture agrega valor cuando el dominio es complejo y hay múltiples p
 - [x] Importar estado de cuenta PDF de BBVA
 - [x] Auto-categorización por descripción del movimiento
 - [x] Presupuestos por categoría y mes
-- [ ] Dashboard con balance, gastos por categoría y % de presupuesto
-- [ ] Alertas automáticas al superar el 80% del presupuesto (Hangfire)
+- [x] Dashboard con balance, gastos por categoría y % de presupuesto
+- [x] Alertas automáticas al superar el 80% del presupuesto (Hangfire)
 
 ## Cómo correr el proyecto
 
