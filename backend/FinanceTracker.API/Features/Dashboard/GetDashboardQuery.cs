@@ -9,8 +9,11 @@ public record DashboardResponse(
     decimal TotalExpenses,
     decimal Balance,
     List<CategorySpending> SpendingByCategory,
-    List<RecentTransaction> RecentTransactions
+    List<RecentTransaction> RecentTransactions,
+    List<DailyFlow> DailyFlow
 );
+
+public record DailyFlow(string Date, decimal Income, decimal Expenses);
 
 public record CategorySpending(
     string CategoryName,

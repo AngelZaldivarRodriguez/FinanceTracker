@@ -58,12 +58,23 @@ public class GetDashboardHandler(AppDbContext db) : IRequestHandler<GetDashboard
             ))
             .ToList();
 
+        var dailyFlow = transactions
+            .GroupBy(t => t.Date.Day)
+            .OrderBy(g => g.Key)
+            .Select(g => new DailyFlow(
+                $"{request.Year}-{request.Month:D2}-{g.Key:D2}",
+                g.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount),
+                g.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount)
+            ))
+            .ToList();
+
         return new DashboardResponse(
             totalIncome,
             totalExpenses,
             totalIncome - totalExpenses,
             spendingByCategory,
-            recentTransactions
+            recentTransactions,
+            dailyFlow
         );
     }
 }

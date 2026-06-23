@@ -19,5 +19,13 @@ public static class DashboardEndpoint
         })
         .RequireAuthorization()
         .WithTags("Dashboard");
+
+        app.MapGet("/api/dashboard/monthly", async (ClaimsPrincipal user, IMediator mediator, int? months) =>
+        {
+            var result = await mediator.Send(new GetMonthlySummaryQuery(user.GetUserId(), months ?? 6));
+            return Results.Ok(result);
+        })
+        .RequireAuthorization()
+        .WithTags("Dashboard");
     }
 }

@@ -21,9 +21,23 @@ export interface DashboardData {
     categoryIcon: string
     categoryColor: string
   }[]
+  dailyFlow: {
+    date: string
+    income: number
+    expenses: number
+  }[]
+}
+
+export interface MonthlySummary {
+  label: string
+  income: number
+  expenses: number
 }
 
 export const dashboardApi = {
   get: (month?: number, year?: number) =>
     api.get<DashboardData>('/dashboard', { params: { month, year } }).then((r) => r.data),
+
+  getMonthly: (months = 6) =>
+    api.get<MonthlySummary[]>('/dashboard/monthly', { params: { months } }).then((r) => r.data),
 }
