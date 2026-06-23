@@ -9,6 +9,9 @@ interface CreateLoanDto {
   totalPayments: number
   monthlyPayment: number
   startDate: string
+  carPrice: number
+  downPayment: number
+  initialPaidPayments: number
 }
 import { Car, CheckCircle2, Clock, Plus, ChevronDown, ChevronUp, AlertTriangle, X } from 'lucide-react'
 
@@ -202,9 +205,10 @@ export function LoansPage() {
                     <tr>
                       <th className="text-left px-4 py-2 text-gray-500 font-medium">#</th>
                       <th className="text-left px-4 py-2 text-gray-500 font-medium">Fecha</th>
-                      <th className="text-right px-4 py-2 text-gray-500 font-medium">Capital</th>
-                      <th className="text-right px-4 py-2 text-gray-500 font-medium">Interés</th>
-                      <th className="text-right px-4 py-2 text-gray-500 font-medium">IVA</th>
+                      <th className="text-right px-4 py-2 text-gray-500 font-medium">Cap. Vehículo</th>
+                      <th className="text-right px-4 py-2 text-gray-500 font-medium">Cap. Seguro</th>
+                      <th className="text-right px-4 py-2 text-gray-500 font-medium">Interés+IVA</th>
+                      <th className="text-right px-4 py-2 text-gray-500 font-medium">Seg. Vida</th>
                       <th className="text-right px-4 py-2 text-gray-500 font-medium">Total</th>
                       <th className="text-right px-4 py-2 text-gray-500 font-medium">Saldo</th>
                       <th className="px-4 py-2" />
@@ -216,8 +220,9 @@ export function LoansPage() {
                         <td className="px-4 py-2 text-gray-400">{row.number}</td>
                         <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{fmtDate(row.dueDate)}</td>
                         <td className="px-4 py-2 text-right text-gray-700">{fmt(row.capital)}</td>
-                        <td className="px-4 py-2 text-right text-gray-700">{fmt(row.interest)}</td>
-                        <td className="px-4 py-2 text-right text-gray-500">{fmt(row.iva)}</td>
+                        <td className="px-4 py-2 text-right text-gray-500">{row.capitalSeguro > 0 ? fmt(row.capitalSeguro) : '—'}</td>
+                        <td className="px-4 py-2 text-right text-gray-700">{fmt(row.interestWithIva)}</td>
+                        <td className="px-4 py-2 text-right text-gray-500">{fmt(row.seguroVida)}</td>
                         <td className="px-4 py-2 text-right font-semibold text-gray-900">{fmt(row.total)}</td>
                         <td className="px-4 py-2 text-right text-blue-600">{fmt(row.balance)}</td>
                         <td className="px-4 py-2 text-right">
@@ -274,6 +279,7 @@ function LoanForm({ onSubmit, loading }: { onSubmit: (d: CreateLoanDto) => void;
     startDate: '2025-08-05',
     carPrice: 517900.00,
     downPayment: 195000.00,
+    initialPaidPayments: 9,
   })
 
   const set = (k: keyof CreateLoanDto, v: string | number) =>
@@ -290,6 +296,7 @@ function LoanForm({ onSubmit, loading }: { onSubmit: (d: CreateLoanDto) => void;
         { label: 'Fecha de inicio del crédito', key: 'startDate', type: 'date' },
         { label: 'Precio total del auto', key: 'carPrice', type: 'number' },
         { label: 'Enganche pagado', key: 'downPayment', type: 'number' },
+        { label: 'Pagos ya realizados', key: 'initialPaidPayments', type: 'number' },
       ].map(({ label, key, type }) => (
         <div key={key}>
           <label className="text-sm font-medium text-gray-700">{label}</label>

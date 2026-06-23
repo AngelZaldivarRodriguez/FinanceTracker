@@ -22,8 +22,9 @@ export interface AmortizationRow {
   number: number
   dueDate: string
   capital: number
-  interest: number
-  iva: number
+  capitalSeguro: number
+  interestWithIva: number
+  seguroVida: number
   total: number
   balance: number
   isPaid: boolean
@@ -44,6 +45,7 @@ export interface CreateLoanDto {
   startDate: string
   carPrice: number
   downPayment: number
+  initialPaidPayments: number
 }
 
 export const loansApi = {
