@@ -14,6 +14,8 @@ export interface LoanSummary {
   totalInterestPaid: number
   totalCapitalPaid: number
   daysUntilNextPayment: number
+  carPrice: number
+  downPayment: number
 }
 
 export interface AmortizationRow {
@@ -40,6 +42,8 @@ export interface CreateLoanDto {
   totalPayments: number
   monthlyPayment: number
   startDate: string
+  carPrice: number
+  downPayment: number
 }
 
 export const loansApi = {

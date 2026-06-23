@@ -11,7 +11,8 @@ public record LoanSummaryDto(
     Guid Id, string Name, decimal OriginalAmount, decimal CurrentBalance,
     decimal AnnualRatePercent, int TotalPayments, int PaidPayments,
     decimal MonthlyPayment, DateTime StartDate, DateTime NextDueDate,
-    decimal TotalInterestPaid, decimal TotalCapitalPaid, int DaysUntilNextPayment
+    decimal TotalInterestPaid, decimal TotalCapitalPaid, int DaysUntilNextPayment,
+    decimal CarPrice, decimal DownPayment
 );
 
 public record AmortizationRow(
@@ -28,7 +29,7 @@ public record GetLoanDetailQuery(Guid LoanId, Guid UserId) : IRequest<LoanDetail
 public record CreateLoanCommand(
     Guid UserId, string Name, decimal OriginalAmount,
     decimal AnnualRatePercent, int TotalPayments, decimal MonthlyPayment,
-    DateTime StartDate
+    DateTime StartDate, decimal CarPrice, decimal DownPayment
 ) : IRequest<LoanSummaryDto>;
 public record MarkPaymentPaidCommand(Guid LoanId, Guid UserId, int PaymentNumber, DateTime PaidDate) : IRequest<bool>;
 
@@ -74,15 +75,10 @@ public static class AmortizationCalculator
     {
         var paid = schedule.Where(r => r.IsPaid).ToList();
         var nextUnpaid = schedule.FirstOrDefault(r => !r.IsPaid);
-        var currentBalance = nextUnpaid != null
-            ? schedule.First(r => r.Number == nextUnpaid.Number - 1 || nextUnpaid.Number == 1 ? r.Number == 0 : false)?.Balance
-              ?? (nextUnpaid.Number == 1 ? loan.OriginalAmount : schedule[nextUnpaid.Number - 2].Balance)
-            : 0m;
 
-        if (paid.Count == 0)
-            currentBalance = loan.OriginalAmount;
-        else
-            currentBalance = schedule[paid.Count - 1].Balance;
+        decimal currentBalance = paid.Count == 0
+            ? loan.OriginalAmount
+            : schedule[paid.Count - 1].Balance;
 
         var nextDue = nextUnpaid?.DueDate ?? schedule.Last().DueDate;
         var daysUntil = (int)(nextDue - DateTime.Today).TotalDays;
@@ -93,7 +89,8 @@ public static class AmortizationCalculator
             loan.MonthlyPayment, loan.StartDate, nextDue,
             paid.Sum(r => r.Interest + r.Iva),
             paid.Sum(r => r.Capital),
-            daysUntil
+            daysUntil,
+            loan.CarPrice, loan.DownPayment
         );
     }
 }
@@ -150,6 +147,8 @@ public class CreateLoanHandler(AppDbContext db) : IRequestHandler<CreateLoanComm
             TotalPayments = request.TotalPayments,
             MonthlyPayment = request.MonthlyPayment,
             StartDate = request.StartDate,
+            CarPrice = request.CarPrice,
+            DownPayment = request.DownPayment,
         };
 
         db.Loans.Add(loan);

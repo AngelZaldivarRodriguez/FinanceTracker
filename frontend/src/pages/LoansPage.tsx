@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { loansApi, CreateLoanDto } from '../api/loans'
+import { loansApi } from '../api/loans'
+
+interface CreateLoanDto {
+  name: string
+  originalAmount: number
+  annualRatePercent: number
+  totalPayments: number
+  monthlyPayment: number
+  startDate: string
+}
 import { Car, CheckCircle2, Clock, Plus, ChevronDown, ChevronUp, AlertTriangle, X } from 'lucide-react'
 
 const fmt = (n: number) =>
@@ -100,7 +109,10 @@ export function LoansPage() {
       )}
 
       {loans.map((loan) => {
-        const progress = ((loan.originalAmount - loan.currentBalance) / loan.originalAmount) * 100
+        const totalPaid = loan.downPayment + loan.totalCapitalPaid
+        const progress = loan.carPrice > 0
+          ? (totalPaid / loan.carPrice) * 100
+          : ((loan.originalAmount - loan.currentBalance) / loan.originalAmount) * 100
         const isSelected = selectedLoan === loan.id
         const urgent = loan.daysUntilNextPayment <= 5 && loan.daysUntilNextPayment >= 0
         const overdue = loan.daysUntilNextPayment < 0
@@ -164,8 +176,8 @@ export function LoansPage() {
                   />
                 </div>
                 <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>{fmt(loan.originalAmount - loan.currentBalance)} pagado</span>
-                  <span>{fmt(loan.currentBalance)} restante</span>
+                  <span>{fmt(totalPaid)} pagado del auto</span>
+                  <span>{fmt((loan.carPrice > 0 ? loan.carPrice : loan.originalAmount) - totalPaid)} restante</span>
                 </div>
               </div>
             </div>
@@ -254,12 +266,14 @@ function MiniCard({ label, value, color }: { label: string; value: string; color
 
 function LoanForm({ onSubmit, loading }: { onSubmit: (d: CreateLoanDto) => void; loading: boolean }) {
   const [form, setForm] = useState<CreateLoanDto>({
-    name: 'KIA Auto',
+    name: 'KIA K4 Sedan GT-Line 2026',
     originalAmount: 341226.26,
     annualRatePercent: 14.99,
     totalPayments: 60,
     monthlyPayment: 8722.11,
-    startDate: '2025-08-28',
+    startDate: '2025-08-05',
+    carPrice: 517900.00,
+    downPayment: 195000.00,
   })
 
   const set = (k: keyof CreateLoanDto, v: string | number) =>
@@ -274,6 +288,8 @@ function LoanForm({ onSubmit, loading }: { onSubmit: (d: CreateLoanDto) => void;
         { label: 'Total de pagos', key: 'totalPayments', type: 'number' },
         { label: 'Pago mensual', key: 'monthlyPayment', type: 'number' },
         { label: 'Fecha de inicio del crédito', key: 'startDate', type: 'date' },
+        { label: 'Precio total del auto', key: 'carPrice', type: 'number' },
+        { label: 'Enganche pagado', key: 'downPayment', type: 'number' },
       ].map(({ label, key, type }) => (
         <div key={key}>
           <label className="text-sm font-medium text-gray-700">{label}</label>

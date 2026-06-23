@@ -13,6 +13,9 @@ public class Loan
     public decimal MonthlyPayment { get; set; }
     public DateTime StartDate { get; set; }
 
+    public decimal CarPrice { get; set; }
+    public decimal DownPayment { get; set; }
+
     public List<LoanPayment> Payments { get; set; } = [];
 }
 
