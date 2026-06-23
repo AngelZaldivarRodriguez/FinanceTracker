@@ -41,7 +41,7 @@ Clean Architecture agrega valor cuando el dominio es complejo y hay múltiples p
 ## Funcionalidades
 
 - [x] Autenticación con JWT (Register / Login)
-- [ ] Categorías (CRUD)
+- [x] Categorías (CRUD)
 - [ ] Transacciones manuales (CRUD)
 - [ ] Importar estado de cuenta PDF de BBVA
 - [ ] Auto-categorización por descripción del movimiento

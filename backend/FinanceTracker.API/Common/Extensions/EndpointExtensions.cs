@@ -1,5 +1,6 @@
 using FinanceTracker.API.Features.Auth.Login;
 using FinanceTracker.API.Features.Auth.Register;
+using FinanceTracker.API.Features.Categories;
 
 namespace FinanceTracker.API.Common.Extensions;
 
@@ -9,5 +10,6 @@ public static class EndpointExtensions
     {
         RegisterEndpoint.Map(app);
         LoginEndpoint.Map(app);
+        CategoriesEndpoint.Map(app);
     }
 }
