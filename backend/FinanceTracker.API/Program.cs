@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using FinanceTracker.API.Common.Extensions;
 using FinanceTracker.API.Infrastructure.Auth;
 using FinanceTracker.API.Infrastructure.BackgroundJobs;
@@ -11,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddOpenApi();
 
