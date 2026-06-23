@@ -8,6 +8,14 @@ Aplicación web para gestión de finanzas personales. Permite registrar ingresos
 **Frontend:** React · TypeScript · Vite  
 **Librerías:** MediatR · FluentValidation · Hangfire · PdfPig · BCrypt
 
+### ¿Por qué Vite y no Create React App?
+
+Create React App está abandonado desde 2023 y ya no recibe mantenimiento. Vite es el estándar actual para proyectos React por tres razones concretas:
+
+- **Arranque instantáneo:** Vite no empaqueta el código al iniciar el servidor de desarrollo. Sirve los módulos directamente al navegador usando ES Modules nativos, así el servidor arranca en menos de 300ms sin importar el tamaño del proyecto. CRA compilaba todo antes de mostrar algo.
+- **Hot reload real:** Cuando modificas un archivo, Vite solo recarga ese módulo específico. CRA reconstruía todo el bundle y tardaba varios segundos.
+- **Build de producción rápido:** Usa Rollup internamente, que genera bundles más pequeños y optimizados que el Webpack de CRA.
+
 ## Arquitectura
 
 El backend usa **Vertical Slices** — cada feature vive en su propio folder con todo lo que necesita (endpoint, handler, validación). No hay capas horizontales compartidas. Esto hace que agregar o modificar un feature no toque código de otros.
