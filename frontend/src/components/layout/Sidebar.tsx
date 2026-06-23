@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Tag, Target, LogOut } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Tag, Target, LogOut, Car } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 
 const links = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/transactions', icon: ArrowLeftRight, label: 'Transacciones' },
   { to: '/budgets', icon: Target, label: 'Presupuestos' },
+  { to: '/loans', icon: Car, label: 'Créditos' },
   { to: '/categories', icon: Tag, label: 'Categorías' },
 ]
 

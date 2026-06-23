@@ -1,5 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { transactionsApi, TransactionFilters } from '../api/transactions'
+import { transactionsApi } from '../api/transactions'
+
+interface TransactionFilters {
+  from?: string
+  to?: string
+  categoryId?: string
+  type?: string
+  search?: string
+  page?: number
+  pageSize?: number
+}
 import { categoriesApi } from '../api/categories'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'

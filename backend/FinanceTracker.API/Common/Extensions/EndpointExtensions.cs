@@ -4,6 +4,7 @@ using FinanceTracker.API.Features.Budgets;
 using FinanceTracker.API.Features.Categories;
 using FinanceTracker.API.Features.Dashboard;
 using FinanceTracker.API.Features.Import;
+using FinanceTracker.API.Features.Loans;
 using FinanceTracker.API.Features.Transactions;
 
 namespace FinanceTracker.API.Common.Extensions;
@@ -19,5 +20,6 @@ public static class EndpointExtensions
         ImportEndpoint.Map(app);
         BudgetsEndpoint.Map(app);
         DashboardEndpoint.Map(app);
+        LoansEndpoint.Map(app);
     }
 }
