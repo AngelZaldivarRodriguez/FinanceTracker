@@ -276,7 +276,7 @@ function LoanForm({ onSubmit, loading }: { onSubmit: (d: CreateLoanDto) => void;
     annualRatePercent: 14.99,
     totalPayments: 60,
     monthlyPayment: 8722.11,
-    startDate: '2025-08-05',
+    startDate: '2025-08-28',
     carPrice: 517900.00,
     downPayment: 195000.00,
     initialPaidPayments: 9,
