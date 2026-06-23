@@ -63,5 +63,13 @@ public static class TransactionsEndpoint
             await db.SaveChangesAsync();
             return Results.NoContent();
         });
+
+        group.MapDelete("/", async (ClaimsPrincipal user, AppDbContext db) =>
+        {
+            await db.Transactions
+                .Where(t => t.UserId == user.GetUserId())
+                .ExecuteDeleteAsync();
+            return Results.NoContent();
+        });
     }
 }

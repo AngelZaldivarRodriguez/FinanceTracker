@@ -29,21 +29,25 @@ public static partial class BbvaStatementParser
 
         using var document = PdfDocument.Open(pdfStream);
 
+        double? cargosX = null;
+        double? abonosX = null;
+
         foreach (var page in document.GetPages())
         {
             var lines = GroupWordsIntoLines(page.GetWords());
-            double? cargosX = null;
-            double? abonosX = null;
 
-            // Buscar la linea de encabezado para calibrar columnas
-            foreach (var line in lines)
+            // Buscar la linea de encabezado para calibrar columnas (solo la primera vez)
+            if (cargosX is null || abonosX is null)
             {
-                var text = string.Join(" ", line.Select(w => w.Text));
-                if (text.Contains("CARGOS") && text.Contains("ABONOS"))
+                foreach (var line in lines)
                 {
-                    cargosX = line.FirstOrDefault(w => w.Text == "CARGOS")?.BoundingBox.Left;
-                    abonosX = line.FirstOrDefault(w => w.Text == "ABONOS")?.BoundingBox.Left;
-                    break;
+                    var text = string.Join(" ", line.Select(w => w.Text));
+                    if (text.Contains("CARGOS") && text.Contains("ABONOS"))
+                    {
+                        cargosX = line.FirstOrDefault(w => w.Text == "CARGOS")?.BoundingBox.Left;
+                        abonosX = line.FirstOrDefault(w => w.Text == "ABONOS")?.BoundingBox.Left;
+                        break;
+                    }
                 }
             }
 

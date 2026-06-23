@@ -32,6 +32,8 @@ export const transactionsApi = {
 
   delete: (id: string) => api.delete(`/transactions/${id}`),
 
+  deleteAll: () => api.delete('/transactions'),
+
   importBbva: (file: File) => {
     const form = new FormData()
     form.append('file', file)

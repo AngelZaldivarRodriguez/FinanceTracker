@@ -20,10 +20,10 @@ public class ImportBbvaHandler(AppDbContext db) : IRequestHandler<ImportBbvaComm
             .Where(c => c.UserId == request.UserId)
             .ToListAsync(cancellationToken);
 
-        // Cargar referencias existentes para evitar duplicados
-        var existingRefs = await db.Transactions
-            .Where(t => t.UserId == request.UserId && t.IsImported && t.Reference != null)
-            .Select(t => t.Reference!)
+        // Deduplicacion por fecha+monto+descripcion (la referencia ******7658 es el numero de tarjeta enmascarado, no es unica)
+        var existingKeys = await db.Transactions
+            .Where(t => t.UserId == request.UserId && t.IsImported)
+            .Select(t => t.Date.ToString("yyyyMMdd") + "|" + t.Amount.ToString() + "|" + t.Description)
             .ToHashSetAsync(cancellationToken);
 
         var toInsert = new List<Transaction>();
@@ -32,8 +32,8 @@ public class ImportBbvaHandler(AppDbContext db) : IRequestHandler<ImportBbvaComm
 
         foreach (var item in parsed)
         {
-            // Saltar duplicados por referencia
-            if (item.Reference != null && existingRefs.Contains(item.Reference))
+            var key = item.Date.ToString("yyyyMMdd") + "|" + item.Amount.ToString() + "|" + item.Description;
+            if (existingKeys.Contains(key))
             {
                 skipped++;
                 continue;

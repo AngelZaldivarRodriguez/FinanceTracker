@@ -4,7 +4,7 @@ import { categoriesApi } from '../api/categories'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Trash2, Plus, Upload } from 'lucide-react'
+import { Trash2, Plus, Upload, Eraser } from 'lucide-react'
 import { useRef, useState } from 'react'
 
 const fmt = (n: number) =>
@@ -59,6 +59,21 @@ export function TransactionsPage() {
     },
   })
 
+  const deleteAllMutation = useMutation({
+    mutationFn: transactionsApi.deleteAll,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
+      setImportResult(null)
+    },
+  })
+
+  const handleDeleteAll = () => {
+    if (window.confirm('¿Borrar TODAS las transacciones? Esta acción no se puede deshacer.')) {
+      deleteAllMutation.mutate()
+    }
+  }
+
   const importMutation = useMutation({
     mutationFn: transactionsApi.importBbva,
     onSuccess: (res) => {
@@ -78,6 +93,16 @@ export function TransactionsPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Transacciones</h2>
         <div className="flex gap-2">
+          {transactions.length > 0 && (
+            <button
+              onClick={handleDeleteAll}
+              disabled={deleteAllMutation.isPending}
+              className="flex items-center gap-2 px-4 py-2 text-sm border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50"
+            >
+              <Eraser size={16} />
+              Borrar todo
+            </button>
+          )}
           <button
             onClick={() => fileRef.current?.click()}
             disabled={importMutation.isPending}
