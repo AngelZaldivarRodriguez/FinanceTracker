@@ -438,7 +438,14 @@ function CardView({
               onClick={() => setTxExpanded((v) => !v)}
               className="w-full flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
             >
-              <span>Movimientos del periodo ({card.recentTransactions.length})</span>
+              <span>
+                Movimientos del periodo ({card.recentTransactions.length})
+                {card.recentTransactions[0] && (
+                  <span className="ml-2 font-normal text-gray-400 text-xs">
+                    {new Date(card.recentTransactions[0].statementPeriod + '-01').toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}
+                  </span>
+                )}
+              </span>
               {txExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
             {!txExpanded && (

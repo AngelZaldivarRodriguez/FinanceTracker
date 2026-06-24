@@ -121,10 +121,13 @@ internal static class CreditCardMapper
                 ProgressPercent: p.TotalMonths > 0 ? Math.Round((decimal)p.PaidMonths / p.TotalMonths * 100, 1) : 0
             )).ToList(),
             RecentTransactions: card.CreditCardTransactions
-                .OrderByDescending(t => t.OperationDate)
+                .GroupBy(t => t.StatementPeriod)
+                .OrderByDescending(g => g.Key)
+                .FirstOrDefault()
+                ?.OrderByDescending(t => t.OperationDate)
                 .Select(t => new CreditCardTransactionDto(
                     t.Id, t.OperationDate, t.ChargeDate, t.Description, t.Amount, t.IsCredit, t.StatementPeriod
-                )).ToList()
+                )).ToList() ?? []
         );
     }
 }
