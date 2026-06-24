@@ -38,7 +38,13 @@ Features/
 ├── Categories/
 ├── Budgets/
 ├── Dashboard/
-└── Import/         ← Parser de PDF de BBVA con PdfPig
+├── Loans/          ← Créditos con amortización
+├── Import/         ← Parser de transacciones PDF de BBVA (PdfPig)
+└── CreditCards/    ← Tarjetas de crédito, MSI, movimientos (PdfPig)
+
+Infrastructure/PdfParsing/
+├── BbvaStatementParser.cs      ← Estado de cuenta → transacciones
+└── BbvaCreditCardParser.cs     ← Estado de cuenta → saldos, MSI, movimientos
 ```
 
 Cada slice sigue el mismo patrón:
@@ -60,11 +66,17 @@ Clean Architecture agrega valor cuando el dominio es complejo y hay múltiples p
 - [x] Autenticación con JWT (Register / Login)
 - [x] Categorías (CRUD)
 - [x] Transacciones manuales (CRUD)
-- [x] Importar estado de cuenta PDF de BBVA
+- [x] Importar estado de cuenta PDF de BBVA (transacciones)
 - [x] Auto-categorización por descripción del movimiento
 - [x] Presupuestos por categoría y mes
-- [x] Dashboard con balance, gastos por categoría y % de presupuesto
+- [x] Dashboard con balance, gastos por categoría, comparativa mensual y flujo acumulado
 - [x] Alertas automáticas al superar el 80% del presupuesto (Hangfire)
+- [x] Créditos / préstamos con tabla de amortización y barra de progreso
+- [x] **Tarjetas de crédito BBVA** — importación automática desde PDF estado de cuenta:
+  - Saldo total, disponible, pago para no generar intereses, días hasta vencimiento
+  - MSI activas con barra de progreso, meses pagados/totales y saldo pendiente
+  - Movimientos regulares del periodo (cargos y abonos)
+  - Soporte para múltiples tarjetas
 
 ## Cómo correr el proyecto
 
@@ -123,9 +135,15 @@ App disponible en `http://localhost:5173`
 | POST | `/api/auth/login` | No | Iniciar sesión |
 | GET | `/api/categories` | Sí | Listar categorías |
 | POST | `/api/categories` | Sí | Crear categoría |
-| GET | `/api/transactions` | Sí | Listar transacciones |
+| GET | `/api/transactions` | Sí | Listar transacciones (paginación, filtros) |
 | POST | `/api/transactions` | Sí | Crear transacción |
-| POST | `/api/import/bbva` | Sí | Importar PDF de BBVA |
+| POST | `/api/import/bbva` | Sí | Importar PDF de BBVA (transacciones) |
 | GET | `/api/budgets` | Sí | Listar presupuestos |
 | POST | `/api/budgets` | Sí | Crear presupuesto |
 | GET | `/api/dashboard` | Sí | Resumen del mes actual |
+| GET | `/api/loans` | Sí | Listar créditos |
+| POST | `/api/loans` | Sí | Crear crédito |
+| POST | `/api/credit-cards/parse-statement` | Sí | Parsear PDF BBVA (sin guardar) |
+| GET | `/api/credit-cards` | Sí | Listar tarjetas |
+| POST | `/api/credit-cards` | Sí | Crear tarjeta desde datos parseados |
+| PUT | `/api/credit-cards/{id}/update-statement` | Sí | Actualizar tarjeta con nuevo PDF |
