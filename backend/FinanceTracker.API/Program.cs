@@ -50,6 +50,7 @@ builder.Services.AddScoped<EmailService>();
 // Jobs
 builder.Services.AddScoped<BudgetAlertJob>();
 builder.Services.AddScoped<CreditCardPaymentReminderJob>();
+builder.Services.AddScoped<LoanPaymentReminderJob>();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
@@ -88,6 +89,11 @@ RecurringJob.AddOrUpdate<CreditCardPaymentReminderJob>(
     "credit-card-reminders",
     job => job.CheckPaymentsDue(),
     Cron.Daily(8)); // todos los días a las 8am UTC (2am México)
+
+RecurringJob.AddOrUpdate<LoanPaymentReminderJob>(
+    "loan-reminders",
+    job => job.CheckPaymentsDue(),
+    Cron.Daily(8));
 
 app.MapFeatureEndpoints();
 
