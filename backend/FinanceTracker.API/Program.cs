@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using FinanceTracker.API.Common.Extensions;
 using FinanceTracker.API.Infrastructure.Auth;
 using FinanceTracker.API.Infrastructure.BackgroundJobs;
+using FinanceTracker.API.Infrastructure.Email;
 using FinanceTracker.API.Infrastructure.Persistence;
 using FluentValidation;
 using Hangfire;
@@ -40,7 +41,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<JwtService>();
+
+// Email
+var emailSettings = builder.Configuration.GetSection("Email").Get<EmailSettings>() ?? new EmailSettings();
+builder.Services.AddSingleton(emailSettings);
+builder.Services.AddScoped<EmailService>();
+
+// Jobs
 builder.Services.AddScoped<BudgetAlertJob>();
+builder.Services.AddScoped<CreditCardPaymentReminderJob>();
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
@@ -73,6 +83,11 @@ RecurringJob.AddOrUpdate<BudgetAlertJob>(
     "budget-alerts",
     job => job.CheckBudgetAlerts(),
     Cron.Hourly);
+
+RecurringJob.AddOrUpdate<CreditCardPaymentReminderJob>(
+    "credit-card-reminders",
+    job => job.CheckPaymentsDue(),
+    Cron.Daily(8)); // todos los días a las 8am UTC (2am México)
 
 app.MapFeatureEndpoints();
 
