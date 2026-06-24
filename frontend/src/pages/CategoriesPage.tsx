@@ -14,6 +14,8 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
+const inputCls = 'mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+
 export function CategoriesPage() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
@@ -30,11 +32,7 @@ export function CategoriesPage() {
 
   const createMutation = useMutation({
     mutationFn: categoriesApi.create,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories'] })
-      reset()
-      setShowForm(false)
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); reset(); setShowForm(false) },
   })
 
   const deleteMutation = useMutation({
@@ -45,7 +43,7 @@ export function CategoriesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Categorías</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Categorías</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -58,26 +56,26 @@ export function CategoriesPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit((d) => createMutation.mutate(d))}
-          className="bg-white rounded-2xl border border-gray-200 p-6 flex gap-4 items-end"
+          className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 flex gap-4 items-end"
         >
           <div className="flex-1">
-            <label className="text-sm font-medium text-gray-700">Nombre</label>
-            <input {...register('name')} className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nombre</label>
+            <input {...register('name')} className={inputCls} />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
           </div>
           <div className="w-24">
-            <label className="text-sm font-medium text-gray-700">Ícono</label>
-            <input {...register('icon')} className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-center" />
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Ícono</label>
+            <input {...register('icon')} className={`${inputCls} text-center`} />
           </div>
           <div className="w-24">
-            <label className="text-sm font-medium text-gray-700">Color</label>
-            <input {...register('color')} type="color" className="mt-1 w-full h-9 border border-gray-300 rounded-lg cursor-pointer" />
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Color</label>
+            <input {...register('color')} type="color" className="mt-1 w-full h-9 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" />
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-lg">
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
               Cancelar
             </button>
-            <button type="submit" className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg">
+            <button type="submit" className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
               Guardar
             </button>
           </div>
@@ -87,40 +85,34 @@ export function CategoriesPage() {
       {isLoading ? (
         <p className="text-gray-400 text-sm">Cargando...</p>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">Categoría</th>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">Tipo</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Categoría</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Tipo</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {categories.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
+                <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-                        style={{ backgroundColor: c.color + '22' }}
-                      >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ backgroundColor: c.color + '22' }}>
                         {c.icon}
                       </div>
-                      <span className="font-medium text-gray-900">{c.name}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{c.name}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${c.isDefault ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-700'}`}>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${c.isDefault ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'}`}>
                       {c.isDefault ? 'Predeterminada' : 'Personalizada'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     {!c.isDefault && (
-                      <button
-                        onClick={() => deleteMutation.mutate(c.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                      >
+                      <button onClick={() => deleteMutation.mutate(c.id)} className="text-gray-400 hover:text-red-500 transition-colors">
                         <Trash2 size={16} />
                       </button>
                     )}

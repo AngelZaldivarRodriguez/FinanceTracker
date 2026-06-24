@@ -32,6 +32,9 @@ type FormData = z.infer<typeof schema>
 
 const PAGE_SIZE = 20
 
+const inputCls = 'mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+const filterCls = 'text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+
 export function TransactionsPage() {
   const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -111,23 +114,17 @@ export function TransactionsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Transacciones</h2>
-          {total > 0 && (
-            <p className="text-sm text-gray-400 mt-0.5">{total.toLocaleString()} movimientos</p>
-          )}
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Transacciones</h2>
+          {total > 0 && <p className="text-sm text-gray-400 mt-0.5">{total.toLocaleString()} movimientos</p>}
         </div>
         <div className="flex gap-2">
           {total > 0 && (
             <button
-              onClick={() => {
-                if (window.confirm('¿Borrar TODAS las transacciones? Esta acción no se puede deshacer.'))
-                  deleteAllMutation.mutate()
-              }}
+              onClick={() => { if (window.confirm('¿Borrar TODAS las transacciones?')) deleteAllMutation.mutate() }}
               disabled={deleteAllMutation.isPending}
-              className="flex items-center gap-2 px-4 py-2 text-sm border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
             >
               <Eraser size={16} />
               Borrar todo
@@ -136,7 +133,7 @@ export function TransactionsPage() {
           <button
             onClick={() => fileRef.current?.click()}
             disabled={importMutation.isPending}
-            className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
           >
             <Upload size={16} />
             {importMutation.isPending ? 'Importando...' : 'Importar BBVA'}
@@ -156,37 +153,36 @@ export function TransactionsPage() {
       </div>
 
       {importResult && (
-        <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-sm text-green-800">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-3 text-sm text-green-800 dark:text-green-400">
           Importadas: {importResult.imported} | Duplicadas (omitidas): {importResult.skipped}
         </div>
       )}
 
-      {/* Form */}
       {showForm && (
         <form
           onSubmit={handleSubmit((d) => createMutation.mutate(d as any))}
-          className="bg-white rounded-2xl border border-gray-200 p-6 grid grid-cols-2 gap-4"
+          className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 grid grid-cols-2 gap-4"
         >
           <div className="col-span-2">
-            <label className="text-sm font-medium text-gray-700">Descripción</label>
-            <input {...register('description')} className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Descripción</label>
+            <input {...register('description')} className={inputCls} />
             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Monto</label>
-            <input {...register('amount')} type="number" step="0.01" className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Monto</label>
+            <input {...register('amount')} type="number" step="0.01" className={inputCls} />
             {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Tipo</label>
-            <select {...register('type')} className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
+            <select {...register('type')} className={inputCls}>
               <option value="Expense">Gasto</option>
               <option value="Income">Ingreso</option>
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Categoría</label>
-            <select {...register('categoryId')} className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Categoría</label>
+            <select {...register('categoryId')} className={inputCls}>
               <option value="">Selecciona...</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
@@ -195,20 +191,19 @@ export function TransactionsPage() {
             {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId.message}</p>}
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Fecha</label>
-            <input {...register('date')} type="date" className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Fecha</label>
+            <input {...register('date')} type="date" className={inputCls} />
           </div>
           <div className="col-span-2 flex justify-end gap-2">
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-lg">Cancelar</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50">Guardar</button>
           </div>
         </form>
       )}
 
       {/* Filtros */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-5 gap-3">
-          {/* Búsqueda */}
           <div className="col-span-2 relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -218,69 +213,43 @@ export function TransactionsPage() {
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && setFilter('search', search)}
               onBlur={() => setFilter('search', search)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500`}
             />
           </div>
-
-          {/* Tipo */}
-          <select
-            value={filters.type ?? ''}
-            onChange={(e) => setFilter('type', e.target.value)}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+          <select value={filters.type ?? ''} onChange={(e) => setFilter('type', e.target.value)} className={filterCls}>
             <option value="">Todos los tipos</option>
             <option value="Income">Ingresos</option>
             <option value="Expense">Gastos</option>
           </select>
-
-          {/* Categoría */}
-          <select
-            value={filters.categoryId ?? ''}
-            onChange={(e) => setFilter('categoryId', e.target.value)}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+          <select value={filters.categoryId ?? ''} onChange={(e) => setFilter('categoryId', e.target.value)} className={filterCls}>
             <option value="">Todas las categorías</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
             ))}
           </select>
-
-          {/* Limpiar */}
           <button
             onClick={clearFilters}
             disabled={!hasActiveFilters}
-            className="flex items-center justify-center gap-1.5 text-sm border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-1.5 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <X size={14} />
             Limpiar
           </button>
         </div>
-
-        {/* Fechas */}
         <div className="flex gap-3 mt-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 whitespace-nowrap">Desde</span>
-            <input
-              type="date"
-              value={filters.from ?? ''}
-              onChange={(e) => setFilter('from', e.target.value)}
-              className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Desde</span>
+            <input type="date" value={filters.from ?? ''} onChange={(e) => setFilter('from', e.target.value)} className={`text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500`} />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 whitespace-nowrap">Hasta</span>
-            <input
-              type="date"
-              value={filters.to ?? ''}
-              onChange={(e) => setFilter('to', e.target.value)}
-              className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Hasta</span>
+            <input type="date" value={filters.to ?? ''} onChange={(e) => setFilter('to', e.target.value)} className={`text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500`} />
           </div>
         </div>
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {isLoading ? (
           <p className="text-gray-400 text-sm p-6">Cargando...</p>
         ) : items.length === 0 ? (
@@ -290,44 +259,36 @@ export function TransactionsPage() {
         ) : (
           <>
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-4 py-3 text-gray-600 font-medium">Descripción</th>
-                  <th className="text-left px-4 py-3 text-gray-600 font-medium">Categoría</th>
-                  <th className="text-left px-4 py-3 text-gray-600 font-medium">Fecha</th>
-                  <th className="text-right px-4 py-3 text-gray-600 font-medium">Monto</th>
+                  <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Descripción</th>
+                  <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Categoría</th>
+                  <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Fecha</th>
+                  <th className="text-right px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Monto</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {items.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-900 max-w-xs">
+                  <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="px-4 py-3 text-gray-900 dark:text-white max-w-xs">
                       <p className="truncate">{t.description}</p>
-                      {t.isImported && (
-                        <span className="text-xs text-gray-400">Importado</span>
-                      )}
+                      {t.isImported && <span className="text-xs text-gray-400">Importado</span>}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                       <span className="flex items-center gap-1.5">
-                        <span
-                          className="w-2 h-2 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: t.categoryColor }}
-                        />
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.categoryColor }} />
                         {t.categoryIcon} {t.categoryName}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       {new Date(t.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                     <td className={`px-4 py-3 text-right font-semibold whitespace-nowrap ${t.type === 'Income' ? 'text-green-600' : 'text-red-600'}`}>
                       {t.type === 'Income' ? '+' : '-'}{fmt(t.amount)}
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => deleteMutation.mutate(t.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                      >
+                      <button onClick={() => deleteMutation.mutate(t.id)} className="text-gray-400 hover:text-red-500 transition-colors">
                         <Trash2 size={16} />
                       </button>
                     </td>
@@ -336,32 +297,25 @@ export function TransactionsPage() {
               </tbody>
             </table>
 
-            {/* Paginación */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-                <p className="text-sm text-gray-500">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Mostrando {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, total)} de {total.toLocaleString()}
                 </p>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setFilters(f => ({ ...f, page: Math.max(1, (f.page ?? 1) - 1) }))}
                     disabled={page <= 1}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300"
                   >
                     <ChevronLeft size={18} />
                   </button>
-
                   {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
                     let p: number
-                    if (totalPages <= 7) {
-                      p = i + 1
-                    } else if (page <= 4) {
-                      p = i + 1
-                    } else if (page >= totalPages - 3) {
-                      p = totalPages - 6 + i
-                    } else {
-                      p = page - 3 + i
-                    }
+                    if (totalPages <= 7) p = i + 1
+                    else if (page <= 4) p = i + 1
+                    else if (page >= totalPages - 3) p = totalPages - 6 + i
+                    else p = page - 3 + i
                     return (
                       <button
                         key={p}
@@ -369,18 +323,17 @@ export function TransactionsPage() {
                         className={`w-8 h-8 text-sm rounded-lg ${
                           p === page
                             ? 'bg-blue-600 text-white font-semibold'
-                            : 'hover:bg-gray-100 text-gray-600'
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
                         }`}
                       >
                         {p}
                       </button>
                     )
                   })}
-
                   <button
                     onClick={() => setFilters(f => ({ ...f, page: Math.min(totalPages, (f.page ?? 1) + 1) }))}
                     disabled={page >= totalPages}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300"
                   >
                     <ChevronRight size={18} />
                   </button>
