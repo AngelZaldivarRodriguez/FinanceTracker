@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Tag, Target, LogOut, Car, Sun, Moon } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Tag, Target, LogOut, Car, Sun, Moon, CreditCard } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { useThemeStore } from '../../store/themeStore'
 
@@ -8,6 +8,7 @@ const links = [
   { to: '/transactions', icon: ArrowLeftRight, label: 'Transacciones' },
   { to: '/budgets', icon: Target, label: 'Presupuestos' },
   { to: '/loans', icon: Car, label: 'Créditos' },
+  { to: '/credit-cards', icon: CreditCard, label: 'Tarjetas' },
   { to: '/categories', icon: Tag, label: 'Categorías' },
 ]
 

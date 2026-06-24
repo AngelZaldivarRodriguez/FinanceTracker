@@ -2,6 +2,7 @@ using FinanceTracker.API.Features.Auth.Login;
 using FinanceTracker.API.Features.Auth.Register;
 using FinanceTracker.API.Features.Budgets;
 using FinanceTracker.API.Features.Categories;
+using FinanceTracker.API.Features.CreditCards;
 using FinanceTracker.API.Features.Dashboard;
 using FinanceTracker.API.Features.Import;
 using FinanceTracker.API.Features.Loans;
@@ -21,5 +22,6 @@ public static class EndpointExtensions
         BudgetsEndpoint.Map(app);
         DashboardEndpoint.Map(app);
         LoansEndpoint.Map(app);
+        CreditCardsEndpoint.Map(app);
     }
 }

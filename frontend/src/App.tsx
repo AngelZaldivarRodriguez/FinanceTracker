@@ -9,6 +9,7 @@ import { TransactionsPage } from './pages/TransactionsPage'
 import { BudgetsPage } from './pages/BudgetsPage'
 import { CategoriesPage } from './pages/CategoriesPage'
 import { LoansPage } from './pages/LoansPage'
+import { CreditCardsPage } from './pages/CreditCardsPage'
 
 const qc = new QueryClient()
 
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="budgets" element={<BudgetsPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="loans" element={<LoansPage />} />
+            <Route path="credit-cards" element={<CreditCardsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

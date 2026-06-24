@@ -4,6 +4,7 @@ using FinanceTracker.API.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinanceTracker.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260624154947_AddCreditCards")]
+    partial class AddCreditCards
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,45 +149,6 @@ namespace FinanceTracker.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CreditCards");
-                });
-
-            modelBuilder.Entity("FinanceTracker.API.Domain.Entities.CreditCardTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("ChargeDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("CreditCardId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCredit")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("OperationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("StatementPeriod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreditCardId");
-
-                    b.ToTable("CreditCardTransactions");
                 });
 
             modelBuilder.Entity("FinanceTracker.API.Domain.Entities.Loan", b =>
@@ -403,17 +367,6 @@ namespace FinanceTracker.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FinanceTracker.API.Domain.Entities.CreditCardTransaction", b =>
-                {
-                    b.HasOne("FinanceTracker.API.Domain.Entities.CreditCard", "CreditCard")
-                        .WithMany("CreditCardTransactions")
-                        .HasForeignKey("CreditCardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreditCard");
-                });
-
             modelBuilder.Entity("FinanceTracker.API.Domain.Entities.Loan", b =>
                 {
                     b.HasOne("FinanceTracker.API.Domain.Entities.User", "User")
@@ -475,8 +428,6 @@ namespace FinanceTracker.API.Migrations
 
             modelBuilder.Entity("FinanceTracker.API.Domain.Entities.CreditCard", b =>
                 {
-                    b.Navigation("CreditCardTransactions");
-
                     b.Navigation("Promotions");
                 });
 
