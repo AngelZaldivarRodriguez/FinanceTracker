@@ -83,7 +83,7 @@ public static class BbvaCreditCardParser
         var promotions = ParseMsiTable(fullText);
         var regularTransactions = ParseRegularTransactions(fullText);
 
-        return new ParsedCreditCardStatement(
+        var result = new ParsedCreditCardStatement(
             LastFourDigits: lastFour,
             CreditLimit: creditLimit,
             AvailableCredit: availableCredit,
@@ -99,6 +99,41 @@ public static class BbvaCreditCardParser
             Promotions: promotions,
             RegularTransactions: regularTransactions
         );
+
+        Validate(result);
+        return result;
+    }
+
+    private static void Validate(ParsedCreditCardStatement r)
+    {
+        var errors = new List<string>();
+
+        if (r.TotalBalance == 0)
+            errors.Add($"Saldo deudor total = $0.00 — posible error de formato");
+
+        if (r.CreditLimit == 0)
+            errors.Add($"Límite de crédito = $0.00 — posible error de formato");
+
+        if (r.PaymentToAvoidInterest == 0)
+            errors.Add($"Pago para no generar intereses = $0.00 — posible error de formato");
+
+        // TotalBalance debe ser aproximadamente RegularBalance + MsiBalance (tolerancia $1)
+        var expectedTotal = r.RegularBalance + r.MsiBalance;
+        if (expectedTotal > 0 && Math.Abs(r.TotalBalance - expectedTotal) > 1m)
+            errors.Add($"Saldo total ({r.TotalBalance:C}) no coincide con regular ({r.RegularBalance:C}) + MSI ({r.MsiBalance:C}) — posible error de formato");
+
+        // AvailableCredit + TotalBalance debe aproximarse al límite (tolerancia 5%)
+        if (r.CreditLimit > 0)
+        {
+            var diff = Math.Abs(r.CreditLimit - (r.AvailableCredit + r.TotalBalance));
+            if (diff / r.CreditLimit > 0.05m)
+                errors.Add($"Disponible ({r.AvailableCredit:C}) + saldo ({r.TotalBalance:C}) no coincide con límite ({r.CreditLimit:C}) — posible error de formato");
+        }
+
+        if (errors.Count > 0)
+            throw new InvalidOperationException(
+                "El PDF no pudo parsearse correctamente. Verifica que sea un estado de cuenta BBVA válido.\n" +
+                string.Join("\n", errors));
     }
 
     // Finds first decimal amount (X,XXX.XX) after a label, skipping footnote digits
