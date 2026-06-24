@@ -1,3 +1,4 @@
+using FinanceTracker.API.Features.Loans;
 using FinanceTracker.API.Infrastructure.Email;
 using FinanceTracker.API.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -11,50 +12,55 @@ public class LoanPaymentReminderJob(AppDbContext db, EmailService email, ILogger
         var today = DateTime.UtcNow.Date;
         var in3Days = today.AddDays(3);
 
-        // Busca el próximo pago no pagado de cada crédito que venza en <=3 días
-        var payments = await db.Set<FinanceTracker.API.Domain.Entities.LoanPayment>()
-            .Include(p => p.Loan)
-            .Where(p => !p.IsPaid && p.DueDate.Date >= today && p.DueDate.Date <= in3Days)
+        var loans = await db.Loans
+            .Include(l => l.Payments)
             .ToListAsync();
 
-        var userIds = payments.Select(p => p.Loan.UserId).Distinct().ToList();
+        var userIds = loans.Select(l => l.UserId).Distinct().ToList();
         var users = await db.Users
             .Where(u => userIds.Contains(u.Id))
-            .ToDictionaryAsync(u => u.Id, u => u.Email);
+            .ToDictionaryAsync(u => u.Id, u => new { u.Email });
 
-        foreach (var payment in payments)
+        foreach (var loan in loans)
         {
-            if (!users.TryGetValue(payment.Loan.UserId, out var userEmail)) continue;
+            // Usa el mismo cálculo que la UI — los pagos futuros no están en DB
+            var schedule = AmortizationCalculator.BuildSchedule(loan.StartDate, loan.Payments);
+            var nextUnpaid = schedule.FirstOrDefault(r => !r.IsPaid);
 
-            var daysLeft = (int)(payment.DueDate.Date - today).TotalDays;
+            if (nextUnpaid is null) continue;
+            if (nextUnpaid.DueDate.Date < today || nextUnpaid.DueDate.Date > in3Days) continue;
+
+            if (!users.TryGetValue(loan.UserId, out var user)) continue;
+
+            var daysLeft = (int)(nextUnpaid.DueDate.Date - today).TotalDays;
             var daysText = daysLeft == 0 ? "hoy" : daysLeft == 1 ? "mañana" : $"en {daysLeft} días";
 
-            var subject = $"🚗 Pago del crédito {payment.Loan.Name} vence {daysText}";
+            var subject = $"🚗 Pago del crédito {loan.Name} vence {daysText}";
             var body = $"""
                 <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
                   <h2 style="color:#1d4ed8">Finance Tracker</h2>
-                  <p>Tu pago mensual del crédito <strong>{payment.Loan.Name}</strong> vence <strong>{daysText}</strong>.</p>
+                  <p>Tu pago mensual del crédito <strong>{loan.Name}</strong> vence <strong>{daysText}</strong>.</p>
                   <table style="width:100%;border-collapse:collapse;margin:16px 0">
                     <tr style="background:#f1f5f9">
                       <td style="padding:10px 12px;font-weight:600">Pago mensual</td>
-                      <td style="padding:10px 12px;text-align:right;color:#dc2626;font-weight:700">{payment.Loan.MonthlyPayment:C}</td>
+                      <td style="padding:10px 12px;text-align:right;color:#dc2626;font-weight:700">{nextUnpaid.Total:C}</td>
                     </tr>
                     <tr>
                       <td style="padding:10px 12px;font-weight:600">Número de pago</td>
-                      <td style="padding:10px 12px;text-align:right">{payment.PaymentNumber} de {payment.Loan.TotalPayments}</td>
+                      <td style="padding:10px 12px;text-align:right">{nextUnpaid.Number} de {loan.TotalPayments}</td>
                     </tr>
                     <tr style="background:#f1f5f9">
                       <td style="padding:10px 12px;font-weight:600">Fecha límite</td>
-                      <td style="padding:10px 12px;text-align:right">{payment.DueDate:dd/MMM/yyyy}</td>
+                      <td style="padding:10px 12px;text-align:right">{nextUnpaid.DueDate:dd/MMM/yyyy}</td>
                     </tr>
                   </table>
                   <p style="color:#6b7280;font-size:13px">Este recordatorio se envía automáticamente desde Finance Tracker.</p>
                 </div>
                 """;
 
-            await email.SendAsync(userEmail, subject, body);
+            await email.SendAsync(user.Email, subject, body);
             logger.LogInformation("Loan reminder sent — {Loan} payment #{Number} due {Date}",
-                payment.Loan.Name, payment.PaymentNumber, payment.DueDate.Date);
+                loan.Name, nextUnpaid.Number, nextUnpaid.DueDate.Date);
         }
     }
 }
