@@ -8,7 +8,6 @@ using FinanceTracker.API.Infrastructure.Auth;
 using FinanceTracker.API.Infrastructure.BackgroundJobs;
 using FinanceTracker.API.Infrastructure.Email;
 using FinanceTracker.API.Infrastructure.Persistence;
-using FluentValidation;
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
