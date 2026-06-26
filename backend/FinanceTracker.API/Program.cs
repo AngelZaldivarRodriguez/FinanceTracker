@@ -105,15 +105,22 @@ RecurringJob.AddOrUpdate<LoanPaymentReminderJob>(
 app.UseExceptionHandler(err => err.Run(async ctx =>
 {
     var ex = ctx.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
-    if (ex is ValidationException ve)
+
+    (int status, object body) = ex switch
     {
-        ctx.Response.StatusCode = 400;
-        ctx.Response.ContentType = "application/json";
-        var errors = ve.Errors
-            .GroupBy(e => e.PropertyName)
-            .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-        await ctx.Response.WriteAsJsonAsync(new { errors });
-    }
+        ValidationException ve => (400, (object)new
+        {
+            errors = ve.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray())
+        }),
+        InvalidOperationException => (409, new { error = ex.Message }),
+        UnauthorizedAccessException => (401, new { error = ex.Message }),
+        _ => (500, new { error = "Ocurrió un error inesperado." })
+    };
+
+    ctx.Response.StatusCode = status;
+    await ctx.Response.WriteAsJsonAsync(body);
 }));
 
 app.MapFeatureEndpoints();

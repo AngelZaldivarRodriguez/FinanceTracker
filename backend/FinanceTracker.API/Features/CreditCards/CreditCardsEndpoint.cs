@@ -10,69 +10,48 @@ public static class CreditCardsEndpoint
     {
         var group = app.MapGroup("/api/credit-cards").RequireAuthorization().WithTags("CreditCards");
 
-        // Parse PDF without saving
-        group.MapPost("/parse-statement", async (HttpRequest request, ClaimsPrincipal user, IMediator mediator) =>
-        {
-            if (!request.HasFormContentType)
-                return Results.BadRequest("Multipart form expected");
+        group.MapPost("/parse-statement", ParseStatement);
+        group.MapGet("/", GetAll);
+        group.MapPost("/", Create);
+        group.MapPut("/{id:guid}/update-statement", UpdateStatement);
+    }
 
-            var form = await request.ReadFormAsync();
-            var file = form.Files.GetFile("file");
-            if (file is null)
-                return Results.BadRequest("No file uploaded");
+    private static async Task<IResult> ParseStatement(HttpRequest request, IMediator mediator)
+    {
+        if (!request.HasFormContentType) return Results.BadRequest("Multipart form expected");
+        var form = await request.ReadFormAsync();
+        var file = form.Files.GetFile("file");
+        if (file is null) return Results.BadRequest("No file uploaded");
 
-            using var ms = new MemoryStream();
-            await file.CopyToAsync(ms);
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var result = await mediator.Send(new ParseBbvaStatementCommand(ms.ToArray()));
+        return Results.Ok(result);
+    }
 
-            try
-            {
-                var result = await mediator.Send(new ParseBbvaStatementCommand(ms.ToArray()));
-                return Results.Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(ex.Message);
-            }
-        });
+    private static async Task<IResult> GetAll(ClaimsPrincipal user, IMediator mediator)
+    {
+        var result = await mediator.Send(new GetCreditCardsQuery(user.GetUserId()));
+        return Results.Ok(result);
+    }
 
-        // Get all cards
-        group.MapGet("/", async (ClaimsPrincipal user, IMediator mediator) =>
-        {
-            var result = await mediator.Send(new GetCreditCardsQuery(user.GetUserId()));
-            return Results.Ok(result);
-        });
+    private static async Task<IResult> Create(CreateCreditCardCommand command, ClaimsPrincipal user, IMediator mediator)
+    {
+        var cmd = command with { UserId = user.GetUserId() };
+        var result = await mediator.Send(cmd);
+        return Results.Created($"/api/credit-cards/{result.Id}", result);
+    }
 
-        // Create card from parsed data
-        group.MapPost("/", async (CreateCreditCardCommand body, ClaimsPrincipal user, IMediator mediator) =>
-        {
-            var cmd = body with { UserId = user.GetUserId() };
-            var result = await mediator.Send(cmd);
-            return Results.Created($"/api/credit-cards/{result.Id}", result);
-        });
+    private static async Task<IResult> UpdateStatement(Guid id, HttpRequest request, ClaimsPrincipal user, IMediator mediator)
+    {
+        if (!request.HasFormContentType) return Results.BadRequest("Multipart form expected");
+        var form = await request.ReadFormAsync();
+        var file = form.Files.GetFile("file");
+        if (file is null) return Results.BadRequest("No file uploaded");
 
-        // Update existing card from new statement PDF
-        group.MapPut("/{id:guid}/update-statement", async (Guid id, HttpRequest request, ClaimsPrincipal user, IMediator mediator) =>
-        {
-            if (!request.HasFormContentType)
-                return Results.BadRequest("Multipart form expected");
-
-            var form = await request.ReadFormAsync();
-            var file = form.Files.GetFile("file");
-            if (file is null)
-                return Results.BadRequest("No file uploaded");
-
-            using var ms = new MemoryStream();
-            await file.CopyToAsync(ms);
-
-            try
-            {
-                var result = await mediator.Send(new UpdateFromStatementCommand(id, user.GetUserId(), ms.ToArray()));
-                return result is null ? Results.NotFound() : Results.Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(ex.Message);
-            }
-        });
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var result = await mediator.Send(new UpdateFromStatementCommand(id, user.GetUserId(), ms.ToArray()));
+        return result is null ? Results.NotFound() : Results.Ok(result);
     }
 }

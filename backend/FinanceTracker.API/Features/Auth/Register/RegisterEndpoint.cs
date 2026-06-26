@@ -8,15 +8,8 @@ public static class RegisterEndpoint
     {
         app.MapPost("/api/auth/register", async (RegisterCommand command, IMediator mediator) =>
         {
-            try
-            {
-                var result = await mediator.Send(command);
-                return Results.Ok(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
         })
         .WithTags("Auth")
         .AllowAnonymous();

@@ -8,15 +8,8 @@ public static class LoginEndpoint
     {
         app.MapPost("/api/auth/login", async (LoginCommand command, IMediator mediator) =>
         {
-            try
-            {
-                var result = await mediator.Send(command);
-                return Results.Ok(result);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Results.Unauthorized();
-            }
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
         })
         .WithTags("Auth")
         .AllowAnonymous();

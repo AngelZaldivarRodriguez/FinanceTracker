@@ -29,15 +29,8 @@ public static class BudgetsEndpoint
     private static async Task<IResult> Create(CreateBudgetCommand command, ClaimsPrincipal user, IMediator mediator)
     {
         var fullCommand = command with { UserId = user.GetUserId() };
-        try
-        {
-            var result = await mediator.Send(fullCommand);
-            return Results.Created($"/api/budgets/{result.Id}", result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.Conflict(new { error = ex.Message });
-        }
+        var result = await mediator.Send(fullCommand);
+        return Results.Created($"/api/budgets/{result.Id}", result);
     }
 
     private static async Task<IResult> Delete(Guid id, ClaimsPrincipal user, AppDbContext db)

@@ -35,15 +35,8 @@ public static class TransactionsEndpoint
     private static async Task<IResult> Create(CreateTransactionCommand command, ClaimsPrincipal user, IMediator mediator)
     {
         var fullCommand = command with { UserId = user.GetUserId() };
-        try
-        {
-            var result = await mediator.Send(fullCommand);
-            return Results.Created($"/api/transactions/{result.Id}", result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.BadRequest(new { error = ex.Message });
-        }
+        var result = await mediator.Send(fullCommand);
+        return Results.Created($"/api/transactions/{result.Id}", result);
     }
 
     private static async Task<IResult> Delete(Guid id, ClaimsPrincipal user, AppDbContext db)
