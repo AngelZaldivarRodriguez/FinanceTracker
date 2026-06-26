@@ -2,7 +2,6 @@ using System.Security.Claims;
 using FinanceTracker.API.Common.Extensions;
 using FinanceTracker.API.Features.Categories.Create;
 using FinanceTracker.API.Features.Categories.GetAll;
-using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FinanceTracker.API.Infrastructure.Persistence;
@@ -21,13 +20,9 @@ public static class CategoriesEndpoint
             return Results.Ok(result);
         });
 
-        group.MapPost("/", async (CreateCategoryCommand command, ClaimsPrincipal user, IMediator mediator, IValidator<CreateCategoryCommand> validator) =>
+        group.MapPost("/", async (CreateCategoryCommand command, ClaimsPrincipal user, IMediator mediator) =>
         {
             var fullCommand = command with { UserId = user.GetUserId() };
-            var validation = await validator.ValidateAsync(fullCommand);
-            if (!validation.IsValid)
-                return Results.ValidationProblem(validation.ToDictionary());
-
             var result = await mediator.Send(fullCommand);
             return Results.Created($"/api/categories/{result.Id}", result);
         });

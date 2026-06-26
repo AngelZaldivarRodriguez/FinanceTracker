@@ -3,7 +3,6 @@ using FinanceTracker.API.Common.Extensions;
 using FinanceTracker.API.Features.Budgets.Create;
 using FinanceTracker.API.Features.Budgets.GetAll;
 using FinanceTracker.API.Infrastructure.Persistence;
-using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,14 +27,9 @@ public static class BudgetsEndpoint
         group.MapPost("/", async (
             CreateBudgetCommand command,
             ClaimsPrincipal user,
-            IMediator mediator,
-            IValidator<CreateBudgetCommand> validator) =>
+            IMediator mediator) =>
         {
             var fullCommand = command with { UserId = user.GetUserId() };
-            var validation = await validator.ValidateAsync(fullCommand);
-            if (!validation.IsValid)
-                return Results.ValidationProblem(validation.ToDictionary());
-
             try
             {
                 var result = await mediator.Send(fullCommand);

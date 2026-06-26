@@ -6,8 +6,6 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   X,
   RefreshCw,
 } from 'lucide-react'
@@ -28,7 +26,6 @@ export function CreditCardsPage() {
   const [parsedData, setParsedData] = useState<ParsedStatementData | null>(null)
   const [cardName, setCardName] = useState('')
   const [parseError, setParseError] = useState<string | null>(null)
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
   const [updatingCardId, setUpdatingCardId] = useState<string | null>(null)
 
   const { data: cards = [], isLoading } = useQuery({
@@ -94,15 +91,6 @@ export function CreditCardsPage() {
     createMutation.mutate({
       ...parsedData,
       name: cardName,
-    })
-  }
-
-  const toggleExpand = (id: string) => {
-    setExpandedCards((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
     })
   }
 
@@ -271,8 +259,6 @@ export function CreditCardsPage() {
         <CardView
           key={card.id}
           card={card}
-          expanded={expandedCards.has(card.id)}
-          onToggle={() => toggleExpand(card.id)}
           onUpdate={() => {
             setUpdatingCardId(card.id)
             updateFileInputRef.current?.click()
@@ -286,26 +272,26 @@ export function CreditCardsPage() {
 
 function CardView({
   card,
-  expanded,
-  onToggle,
   onUpdate,
   updating,
 }: {
   card: CreditCardDto
-  expanded: boolean
-  onToggle: () => void
+  expanded?: boolean
+  onToggle?: () => void
   onUpdate: () => void
   updating: boolean
 }) {
-  const [txExpanded, setTxExpanded] = useState(false)
   const utilizationPct = card.creditLimit > 0 ? (card.totalBalance / card.creditLimit) * 100 : 0
   const overdue = card.daysUntilPayment < 0
   const urgent = card.daysUntilPayment >= 0 && card.daysUntilPayment <= 5
   const activePromos = card.promotions.filter((p) => !p.isCompleted)
+  const periodLabel = card.recentTransactions[0]
+    ? new Date(card.recentTransactions[0].statementPeriod + '-01').toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    : ''
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col" style={{ minHeight: 'calc(100vh - 160px)' }}>
+      <div className="p-6 flex flex-col flex-1">
         {/* Card header */}
         <div className="flex items-start justify-between mb-5">
           <div>
@@ -343,23 +329,11 @@ function CardView({
 
         {/* Key stats grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <StatCard label="Saldo total" value={fmtMoney(card.totalBalance)} color="text-gray-900 dark:text-white" />
+          <StatCard label="Disponible" value={fmtMoney(card.availableCredit)} color="text-green-600 dark:text-green-400" />
+          <StatCard label="Pago sin intereses" value={fmtMoney(card.paymentToAvoidInterest)} color="text-blue-600 dark:text-blue-400" />
           <StatCard
-            label="Saldo total"
-            value={fmtMoney(card.totalBalance)}
-            color="text-gray-900 dark:text-white"
-          />
-          <StatCard
-            label="Disponible"
-            value={fmtMoney(card.availableCredit)}
-            color="text-green-600 dark:text-green-400"
-          />
-          <StatCard
-            label="Pago sin intereses"
-            value={fmtMoney(card.paymentToAvoidInterest)}
-            color="text-blue-600 dark:text-blue-400"
-          />
-          <StatCard
-            label={overdue ? 'Días vencido' : `Vence en`}
+            label={overdue ? 'Días vencido' : 'Vence en'}
             value={overdue ? `${Math.abs(card.daysUntilPayment)} días` : `${card.daysUntilPayment} días`}
             color={overdue ? 'text-red-600 dark:text-red-400' : urgent ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white'}
           />
@@ -373,11 +347,7 @@ function CardView({
           </div>
           <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3">
             <div
-              className={`h-3 rounded-full transition-all ${
-                utilizationPct > 80
-                  ? 'bg-gradient-to-r from-orange-500 to-red-500'
-                  : 'bg-gradient-to-r from-blue-500 to-green-500'
-              }`}
+              className={`h-3 rounded-full transition-all ${utilizationPct > 80 ? 'bg-gradient-to-r from-orange-500 to-red-500' : 'bg-gradient-to-r from-blue-500 to-green-500'}`}
               style={{ width: `${Math.min(utilizationPct, 100)}%` }}
             />
           </div>
@@ -387,84 +357,47 @@ function CardView({
           </div>
         </div>
 
-        {/* MSI Activas */}
-        {activePromos.length > 0 && (
+        {/* Bottom: MSI + Movimientos side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-4 border-t border-gray-100 dark:border-gray-700 flex-1">
+          {/* MSI Activas */}
           <div>
-            <button
-              onClick={onToggle}
-              className="w-full flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3"
-            >
-              <span>MSI Activas ({activePromos.length})</span>
-              {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
-
-            {expanded && (
-              <div className="space-y-3">
-                {activePromos.map((p) => (
-                  <MsiRow key={p.id} promo={p} />
-                ))}
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              MSI Activas ({activePromos.length})
+            </p>
+            {activePromos.length === 0 && card.promotions.length > 0 && (
+              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <CheckCircle2 size={16} />
+                Todas las promociones completadas
               </div>
             )}
-
-            {!expanded && (
-              <div className="space-y-2">
-                {activePromos.slice(0, 2).map((p) => (
-                  <MsiRow key={p.id} promo={p} compact />
-                ))}
-                {activePromos.length > 2 && (
-                  <button
-                    onClick={onToggle}
-                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Ver {activePromos.length - 2} más...
-                  </button>
-                )}
-              </div>
+            {activePromos.length === 0 && card.promotions.length === 0 && (
+              <p className="text-xs text-gray-400">Sin promociones MSI</p>
             )}
+            <div className="space-y-2 overflow-y-auto pr-1">
+              {activePromos.map((p) => (
+                <MsiRow key={p.id} promo={p} />
+              ))}
+            </div>
           </div>
-        )}
 
-        {card.promotions.length > 0 && activePromos.length === 0 && (
-          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-            <CheckCircle2 size={16} />
-            Todas las promociones MSI completadas
-          </div>
-        )}
-
-        {/* Movimientos del periodo */}
-        {card.recentTransactions && card.recentTransactions.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-            <button
-              onClick={() => setTxExpanded((v) => !v)}
-              className="w-full flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
-            >
-              <span>
-                Movimientos del periodo ({card.recentTransactions.length})
-                {card.recentTransactions[0] && (
-                  <span className="ml-2 font-normal text-gray-400 text-xs">
-                    {new Date(card.recentTransactions[0].statementPeriod + '-01').toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}
-                  </span>
-                )}
-              </span>
-              {txExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
-            {!txExpanded && (
-              <button
-                onClick={() => setTxExpanded(true)}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Ver {card.recentTransactions.length} movimientos
-              </button>
+          {/* Movimientos del periodo */}
+          <div>
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              Movimientos del periodo ({card.recentTransactions.length})
+              {periodLabel && (
+                <span className="ml-2 font-normal text-gray-400 text-xs">{periodLabel}</span>
+              )}
+            </p>
+            {card.recentTransactions.length === 0 && (
+              <p className="text-xs text-gray-400">Sin movimientos en este periodo</p>
             )}
-            {txExpanded && (
-              <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
-                {card.recentTransactions.map((tx) => (
-                  <TransactionRow key={tx.id} tx={tx} />
-                ))}
-              </div>
-            )}
+            <div className="space-y-0.5 overflow-y-auto pr-1">
+              {card.recentTransactions.map((tx) => (
+                <TransactionRow key={tx.id} tx={tx} />
+              ))}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

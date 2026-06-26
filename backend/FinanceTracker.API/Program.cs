@@ -1,6 +1,9 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using FinanceTracker.API.Common.Behaviors;
 using FinanceTracker.API.Common.Extensions;
+using FluentValidation;
+using MediatR;
 using FinanceTracker.API.Infrastructure.Auth;
 using FinanceTracker.API.Infrastructure.BackgroundJobs;
 using FinanceTracker.API.Infrastructure.Email;
@@ -52,7 +55,11 @@ builder.Services.AddScoped<BudgetAlertJob>();
 builder.Services.AddScoped<CreditCardPaymentReminderJob>();
 builder.Services.AddScoped<LoanPaymentReminderJob>();
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+});
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddHangfire(config => config
@@ -94,6 +101,20 @@ RecurringJob.AddOrUpdate<LoanPaymentReminderJob>(
     "loan-reminders",
     job => job.CheckPaymentsDue(),
     Cron.Daily(8));
+
+app.UseExceptionHandler(err => err.Run(async ctx =>
+{
+    var ex = ctx.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+    if (ex is ValidationException ve)
+    {
+        ctx.Response.StatusCode = 400;
+        ctx.Response.ContentType = "application/json";
+        var errors = ve.Errors
+            .GroupBy(e => e.PropertyName)
+            .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+        await ctx.Response.WriteAsJsonAsync(new { errors });
+    }
+}));
 
 app.MapFeatureEndpoints();
 
